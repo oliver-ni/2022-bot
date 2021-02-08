@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Lynbrook 2022</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
+
+    <style>
+        ion-icon {
+            font-size: 96px;
+        }
+
+        #main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 500px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hero is-fullheight">
+        <div class="hero-body has-text-centered">
+            <div class="container" id="main">
+                <ion-icon name="{{ icon }}" class="mb-2"></ion-icon>
+                <h1 class="title">{{ title }}</h1>
+                <h2 class="subtitle is-4">{{ message }}</h2>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

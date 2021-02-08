@@ -31,14 +31,14 @@ class Verification(commands.Cog):
         info = await self.bot.redis.get(f"oauth:{data.token}")
         await self.bot.redis.delete(f"oauth:{data.token}")
         if info is None:
-            return {"error": "not-found"}
+            return {"status": "error", "error": "not-found"}
 
         info = json.loads(info)
         user = self.bot.get_user(info["user_id"])
         if user is None:
-            return {"error": "user-not-found"}
+            return {"status": "error", "error": "user-not-found"}
 
-        await self.verify_user(
+        return await self.verify_user(
             user, info["token"]["oauth_token"], info["token"]["oauth_token_secret"]
         )
 
@@ -55,8 +55,10 @@ class Verification(commands.Cog):
             and int(data["grad_year"]) == self.bot.config.SCHOOLOGY_GRAD_YEAR
         ):
             await self.approve_user(user, data)
+            return {"status": "success", "result": "approved"}
         else:
             await self.reject_user(user, data)
+            return {"status": "success", "result": "rejected"}
 
     async def approve_user(self, user, data):
         await self.bot.mongo.db.member.update_one(
