@@ -14,6 +14,7 @@ DEFAULT_COGS = [
     "logging",
     "moderation",
     "mongo",
+    "reaction_roles",
     "redis",
     "tags",
     "verification",
