@@ -11,6 +11,7 @@ COGS = [
     "events",
     "help",
     "info",
+    "levels",
     "logging",
     "moderation",
     "mongo",
@@ -32,9 +33,7 @@ class Bot(commands.Bot, events.EventsMixin):
         )
 
         self.config = config
-        self.ipc = ipc.Server(
-            self, secret_key=config.SECRET_KEY
-        )  # create our IPC Server
+        self.ipc = ipc.Server(self, secret_key=config.SECRET_KEY)
 
         self.load_extension("jishaku")
         for i in COGS:

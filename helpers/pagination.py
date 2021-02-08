@@ -24,10 +24,18 @@ class AsyncListPageSource(menus.AsyncIteratorPageSource):
 
 
 class AsyncFieldsPageSource(menus.AsyncIteratorPageSource):
-    def __init__(self, data, title=None, count=None, format_item=lambda i, x: (i, x)):
+    def __init__(
+        self,
+        data,
+        title=None,
+        count=None,
+        format_item=lambda i, x: (i, x),
+        format_embed=lambda x: x,
+    ):
         super().__init__(data, per_page=5)
         self.title = title
         self.format_item = format_item
+        self.format_embed = format_embed
         self.count = count
 
     async def format_page(self, menu, entries):
@@ -35,6 +43,7 @@ class AsyncFieldsPageSource(menus.AsyncIteratorPageSource):
             title=self.title,
             color=discord.Color.blurple(),
         )
+        self.format_embed(embed)
         start = menu.current_page * self.per_page
         i = start
         for i, x in enumerate(entries, start=start):
@@ -70,8 +79,7 @@ class Paginator:
             while True:
                 reaction, user = await ctx.bot.wait_for(
                     "reaction_add",
-                    check=lambda r, u: r.message.id == message.id
-                    and u.id == ctx.author.id,
+                    check=lambda r, u: r.message.id == message.id and u.id == ctx.author.id,
                     timeout=120,
                 )
                 try:
@@ -87,8 +95,7 @@ class Paginator:
                     ask_message = await ctx.send("What page would you like to go to?")
                     message = await ctx.bot.wait_for(
                         "message",
-                        check=lambda m: m.author == ctx.author
-                        and m.channel == ctx.channel,
+                        check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
                         timeout=30,
                     )
                     try:
