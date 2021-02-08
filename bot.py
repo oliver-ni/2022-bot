@@ -16,6 +16,7 @@ COGS = [
     "mongo",
     "redis",
     "tags",
+    "trivia",
     "verification",
 ]
 
