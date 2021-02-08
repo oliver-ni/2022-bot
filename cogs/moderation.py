@@ -33,7 +33,7 @@ class Action(abc.ABC):
 
     @classmethod
     def build_from_mongo(cls, bot, x):
-        guild = bot.get_guild(self.bot.config.GUILD_ID)
+        guild = bot.get_guild(bot.config.GUILD_ID)
         user = guild.get_member(x["user_id"]) or FakeUser(x["user_id"])
         target = guild.get_member(x["target_id"]) or FakeUser(x["target_id"])
         kwargs = {
@@ -76,9 +76,7 @@ class Action(abc.ABC):
         reason = self.reason or "No reason provided"
         embed.add_field(name="Reason", value=reason, inline=False)
         if self.duration is not None:
-            embed.add_field(
-                name="Duration", value=time.strfdelta(self.duration, long=True)
-            )
+            embed.add_field(name="Duration", value=time.strfdelta(self.duration, long=True))
             embed.set_footer(text="Expires")
             embed.timestamp = self.expires_at
         return embed
@@ -87,18 +85,14 @@ class Action(abc.ABC):
         reason = self.reason or "No reason provided"
 
         embed = discord.Embed(color=self.color)
-        embed.set_author(
-            name=f"{self.user} (ID: {self.user.id})", icon_url=self.user.avatar_url
-        )
+        embed.set_author(name=f"{self.user} (ID: {self.user.id})", icon_url=self.user.avatar_url)
         embed.set_thumbnail(url=self.target.avatar_url)
         embed.add_field(
             name=f"{self.emoji} {self.past_tense.title()} {self.target} (ID: {self.target.id})",
             value=reason,
         )
         if self.duration is not None:
-            embed.set_footer(
-                text=f"Duration • {time.strfdelta(self.duration, long=True)}\nExpires"
-            )
+            embed.set_footer(text=f"Duration • {time.strfdelta(self.duration, long=True)}\nExpires")
             embed.timestamp = self.expires_at
         return embed
 
@@ -374,9 +368,7 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
-    async def ban(
-        self, ctx, target: MemberOrId, duration: TimeDelta = None, *, reason=None
-    ):
+    async def ban(self, ctx, target: MemberOrId, duration: TimeDelta = None, *, reason=None):
         """Bans a member from the server.
 
         You must have the Ban Members permission to use this.
@@ -422,9 +414,7 @@ class Moderation(commands.Cog):
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
-    async def mute(
-        self, ctx, target: discord.Member, duration: TimeDelta = None, *, reason=None
-    ):
+    async def mute(self, ctx, target: discord.Member, duration: TimeDelta = None, *, reason=None):
         """Mutes a member in the server.
 
         You must have the Kick Members permission to use this.
@@ -467,9 +457,7 @@ class Moderation(commands.Cog):
 
         for channel in ctx.guild.channels:
             if isinstance(channel, CategoryChannel) or not channel.permissions_synced:
-                await channel.set_permissions(
-                    role, send_messages=False, speak=False, stream=False
-                )
+                await channel.set_permissions(role, send_messages=False, speak=False, stream=False)
 
     @commands.command()
     @commands.guild_only()
