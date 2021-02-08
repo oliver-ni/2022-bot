@@ -2,7 +2,7 @@ import asyncio
 import json
 import random
 import string
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands, menus, tasks
@@ -73,7 +73,7 @@ class FoodTriviaEvent(commands.Cog):
         else:
             return user
 
-    @tasks.loop(minutes=30)
+    @tasks.loop(minutes=15)
     async def start_game(self):
         channel = self.bot.get_channel(self.bot.config.TRIVIA_CHANNEL_ID)
         embed = discord.Embed(color=discord.Color.blurple())
@@ -98,6 +98,9 @@ class FoodTriviaEvent(commands.Cog):
 
     @start_game.before_loop
     async def before_start_game(self):
+        dt = datetime.now()
+        prev_quarter = dt.replace(minute=15 * (dt.minute // 15), second=0, microsecond=0)
+        await discord.utils.sleep_until(prev_quarter + timedelta(minutes=15))
         await self.bot.wait_until_ready()
 
     @commands.command(aliases=("eventlb", "eventtop", "etop"))
