@@ -5,8 +5,9 @@ import string
 from datetime import datetime
 
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands, menus, tasks
 from helpers.constants import LETTER_REACTIONS
+from helpers.pagination import AsyncFieldsPageSource
 
 
 async def add_reactions(message, *reactions):
@@ -98,6 +99,35 @@ class FoodTriviaEvent(commands.Cog):
     @start_game.before_loop
     async def before_start_game(self):
         await self.bot.wait_until_ready()
+
+    @commands.command(aliases=("eventlb", "eventtop", "etop"))
+    async def eventleaderboard(self, ctx):
+        users = self.bot.mongo.db.member.find().sort("food_trivia_points", -1)
+        count = await self.bot.mongo.db.member.count_documents({})
+
+        def format_embed(embed):
+            embed.set_thumbnail(url=ctx.guild.icon_url)
+
+        def format_item(i, x):
+            name = f"{i + 1}. {x['name']}#{x['discriminator']}"
+            if x.get("nick") is not None:
+                name = f"{name} ({x['nick']})"
+            return {
+                "name": name,
+                "value": str(x.get("food_trivia_points", 0)),
+                "inline": False,
+            }
+
+        pages = menus.MenuPages(
+            source=AsyncFieldsPageSource(
+                users,
+                title=f"Food Trivia Event Leaderboard",
+                format_embed=format_embed,
+                format_item=format_item,
+                count=count,
+            )
+        )
+        await pages.start(ctx)
 
     def cog_unload(self):
         self.start_game.cancel()
