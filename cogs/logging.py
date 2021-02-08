@@ -6,14 +6,6 @@ from discord.ext import commands
 
 formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
 
-GUILD_ID = 716390832034414685
-STAFF_ROLES = [
-    718006431231508481,
-    724879492622843944,
-    732712709514199110,
-    721825360827777043,
-]
-
 
 class Logging(commands.Cog):
     """For logging."""
@@ -97,7 +89,7 @@ class Logging(commands.Cog):
     async def on_member_updates(self, *args):
         thing = args[-1]
         if isinstance(thing, discord.User):
-            guild = self.bot.get_guild(GUILD_ID)
+            guild = self.bot.get_guild(self.bot.config.GUILD_ID)
             thing = guild.get_member(thing.id)
         await self.sync_member(thing)
 
@@ -175,9 +167,7 @@ class Logging(commands.Cog):
         """
 
         channel = channel or ctx.channel
-        await ctx.send(
-            f"https://admin.poketwo.net/logs/{channel.guild.id}/{channel.id}"
-        )
+        await ctx.send(f"https://2022.oliver.ni/logs/{channel.guild.id}/{channel.id}")
 
     @logs.command()
     @commands.has_permissions(administrator=True)

@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Union
 
-import config
 import discord
 from discord.ext import commands, menus, tasks
 from discord.ext.events.utils import fetch_recent_audit_log_entry
@@ -12,18 +11,8 @@ from helpers import time
 from helpers.pagination import AsyncFieldsPageSource
 from helpers.utils import FakeUser, FetchUserConverter
 
-LOG_CHANNEL = 720552022754983999
-STAFF_ROLE = 721825360827777043
-GUILD_ID = 716390832034414685
 
 TimeDelta = Optional[time.TimeDelta]
-
-
-def message_channel(ctx, message):
-    if isinstance(message, discord.TextChannel):
-        return dict(message_id=message.last_message_id, channel_id=message.id)
-    message = message or ctx.message
-    return dict(message_id=message.id, channel_id=message.channel.id)
 
 
 @dataclass
@@ -31,8 +20,6 @@ class Action(abc.ABC):
     target: discord.Member
     user: discord.Member
     reason: str
-    channel_id: int = None
-    message_id: int = None
     created_at: datetime = None
     expires_at: datetime = None
     resolved: bool = None
@@ -46,7 +33,7 @@ class Action(abc.ABC):
 
     @classmethod
     def build_from_mongo(cls, bot, x):
-        guild = bot.get_guild(GUILD_ID)
+        guild = bot.get_guild(self.bot.config.GUILD_ID)
         user = guild.get_member(x["user_id"]) or FakeUser(x["user_id"])
         target = guild.get_member(x["target_id"]) or FakeUser(x["target_id"])
         kwargs = {
@@ -54,8 +41,6 @@ class Action(abc.ABC):
             "target": target,
             "user": user,
             "reason": x["reason"],
-            "channel_id": x.get("channel_id"),
-            "message_id": x.get("message_id"),
             "created_at": x["created_at"],
         }
         if "expires_at" in x:
@@ -69,20 +54,12 @@ class Action(abc.ABC):
             return None
         return self.expires_at - self.created_at
 
-    @property
-    def logs_url(self):
-        if self.message_id is None or self.channel_id is None:
-            return None
-        return f"https://admin.poketwo.net/logs/{GUILD_ID}/{self.channel_id}?before={self.message_id+1}"
-
     def to_dict(self):
         base = {
             "target_id": self.target.id,
             "user_id": self.user.id,
             "type": self.type,
             "reason": self.reason,
-            "channel_id": self.channel_id,
-            "message_id": self.message_id,
             "created_at": self.created_at,
         }
         if self.expires_at is not None:
@@ -108,8 +85,6 @@ class Action(abc.ABC):
 
     def to_log_embed(self):
         reason = self.reason or "No reason provided"
-        if self.logs_url is not None:
-            reason += f" ([Logs]({self.logs_url}))"
 
         embed = discord.Embed(color=self.color)
         embed.set_author(
@@ -154,14 +129,6 @@ class Ban(Action):
     past_tense = "banned"
     emoji = "\N{HAMMER}"
     color = discord.Color.red()
-
-    def to_user_embed(self):
-        embed = super().to_user_embed()
-        embed.description += (
-            " Please do not DM staff members to get unpunished. "
-            "If you would like to appeal, [click here](https://forms.gle/FMqRugm5v47AvFQM8)."
-        )
-        return embed
 
     async def execute(self, ctx):
         reason = self.reason or f"Action done by {self.user} (ID: {self.user.id})"
@@ -219,42 +186,7 @@ class Unmute(Action):
         )
 
 
-class TradingMute(Action):
-    type = "trading_mute"
-    past_tense = "muted in trading"
-    emoji = "\N{SPEAKER WITH CANCELLATION STROKE}"
-    color = discord.Color.blue()
-
-    async def execute(self, ctx):
-        reason = self.reason or f"Action done by {self.user} (ID: {self.user.id})"
-        role = discord.utils.get(ctx.guild.roles, name="Trading Muted")
-        role2 = discord.utils.get(ctx.guild.roles, name="Trading")
-        await self.target.add_roles(role, reason=reason)
-        await self.target.remove_roles(role2, reason=reason)
-        await ctx.bot.mongo.db.member.update_one(
-            {"_id": self.target.id}, {"$set": {"trading_muted": True}}, upsert=True
-        )
-
-
-class TradingUnmute(Action):
-    type = "trading_unmute"
-    past_tense = "unmuted in trading"
-    emoji = "\N{SPEAKER}"
-    color = discord.Color.green()
-
-    async def execute(self, ctx):
-        reason = self.reason or f"Action done by {self.user} (ID: {self.user.id})"
-        role = discord.utils.get(ctx.guild.roles, name="Trading Muted")
-        await self.target.remove_roles(role, reason=reason)
-        await ctx.bot.mongo.db.member.update_one(
-            {"_id": self.target.id}, {"$set": {"trading_muted": False}}, upsert=True
-        )
-
-
-cls_dict = {
-    x.type: x
-    for x in (Kick, Ban, Unban, Warn, Mute, Unmute, TradingMute, TradingUnmute)
-}
+cls_dict = {x.type: x for x in (Kick, Ban, Unban, Warn, Mute, Unmute)}
 
 
 @dataclass
@@ -279,7 +211,7 @@ class BanConverter(commands.Converter):
         return ban
 
 
-class MemberOrIdConverter(commands.Converter):
+class MemberOrId(commands.Converter):
     async def convert(self, ctx, arg):
         try:
             return await commands.MemberConverter().convert(ctx, arg)
@@ -300,7 +232,7 @@ class Moderation(commands.Cog):
         self.check_actions.start()
 
     async def send_log_message(self, *args, **kwargs):
-        channel = self.bot.get_channel(LOG_CHANNEL)
+        channel = self.bot.get_channel(self.bot.config.LOGS_CHANNEL_ID)
         await channel.send(*args, **kwargs)
 
     @commands.Cog.listener()
@@ -312,8 +244,6 @@ class Moderation(commands.Cog):
         kwargs = dict(target=member, user=self.bot.user, reason="User rejoined guild")
         if data.get("muted", False):
             await Mute(**kwargs).execute(ctx)
-        if data.get("trading_muted", False):
-            await TradingMute(**kwargs).execute(ctx)
 
     @commands.Cog.listener()
     async def on_action_perform(self, action):
@@ -381,7 +311,7 @@ class Moderation(commands.Cog):
         """
 
         def check(m):
-            return m.author == ctx.me or m.content.startswith(config.PREFIX)
+            return m.author == ctx.me or m.content.startswith(ctx.prefix)
 
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
         spammers = Counter(m.author.display_name for m in deleted)
@@ -398,28 +328,20 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
-    async def warn(
-        self,
-        ctx,
-        target: discord.Member,
-        message: Optional[Union[discord.Message, discord.TextChannel]] = None,
-        *,
-        reason,
-    ):
+    async def warn(self, ctx, target: discord.Member, *, reason=None):
         """Warns a member in the server.
 
         You must have the Kick Members permission to use this.
         """
 
-        if any(x.id == STAFF_ROLE for x in target.roles):
-            return await ctx.send("You can't punish staff members!")
+        if target.top_role.position > ctx.guild.me.top_role.position:
+            return await ctx.send("I can't punish this member!")
 
         action = Warn(
             target=target,
             user=ctx.author,
             reason=reason,
             created_at=datetime.utcnow(),
-            **message_channel(ctx, message),
         )
         await action.execute(ctx)
         await action.notify()
@@ -429,28 +351,20 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
-    async def kick(
-        self,
-        ctx,
-        target: discord.Member,
-        message: Optional[Union[discord.Message, discord.TextChannel]] = None,
-        *,
-        reason,
-    ):
+    async def kick(self, ctx, target: discord.Member, *, reason=None):
         """Kicks a member from the server.
 
         You must have the Kick Members permission to use this.
         """
 
-        if any(x.id == STAFF_ROLE for x in target.roles):
-            return await ctx.send("You can't punish staff members!")
+        if target.top_role.position > ctx.guild.me.top_role.position:
+            return await ctx.send("I can't punish this member!")
 
         action = Kick(
             target=target,
             user=ctx.author,
             reason=reason,
             created_at=datetime.utcnow(),
-            **message_channel(ctx, message),
         )
         await action.notify()
         await action.execute(ctx)
@@ -461,21 +375,15 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     async def ban(
-        self,
-        ctx,
-        target: MemberOrIdConverter,
-        duration: TimeDelta = None,
-        message: Optional[Union[discord.Message, discord.TextChannel]] = None,
-        *,
-        reason,
+        self, ctx, target: MemberOrId, duration: TimeDelta = None, *, reason=None
     ):
         """Bans a member from the server.
 
         You must have the Ban Members permission to use this.
         """
 
-        if any(x.id == STAFF_ROLE for x in target.roles):
-            return await ctx.send("You can't punish staff members!")
+        if target.top_role.position > ctx.guild.me.top_role.position:
+            return await ctx.send("I can't punish this member!")
 
         created_at = datetime.utcnow()
         expires_at = None
@@ -488,7 +396,6 @@ class Moderation(commands.Cog):
             reason=reason,
             created_at=created_at,
             expires_at=expires_at,
-            **message_channel(ctx, message),
         )
         await action.notify()
         await action.execute(ctx)
@@ -516,21 +423,15 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     async def mute(
-        self,
-        ctx,
-        target: discord.Member,
-        duration: TimeDelta = None,
-        message: Optional[Union[discord.Message, discord.TextChannel]] = None,
-        *,
-        reason,
+        self, ctx, target: discord.Member, duration: TimeDelta = None, *, reason=None
     ):
         """Mutes a member in the server.
 
         You must have the Kick Members permission to use this.
         """
 
-        if any(x.id == STAFF_ROLE for x in target.roles):
-            return await ctx.send("You can't punish staff members!")
+        if target.top_role.position > ctx.guild.me.top_role.position:
+            return await ctx.send("I can't punish this member!")
 
         created_at = datetime.utcnow()
         expires_at = None
@@ -543,7 +444,6 @@ class Moderation(commands.Cog):
             reason=reason,
             created_at=created_at,
             expires_at=expires_at,
-            **message_channel(ctx, message),
         )
         await action.execute(ctx)
         await action.notify()
@@ -568,70 +468,10 @@ class Moderation(commands.Cog):
         await ctx.send(f"Unmuted **{target}**.")
         self.bot.dispatch("action_perform", action)
 
-    @commands.command(aliases=("tmute",))
-    @commands.guild_only()
-    @commands.has_permissions(kick_members=True)
-    async def tradingmute(
-        self,
-        ctx,
-        target: discord.Member,
-        duration: TimeDelta = None,
-        message: Optional[Union[discord.Message, discord.TextChannel]] = None,
-        *,
-        reason,
-    ):
-        """Mutes a member in trading channels.
-
-        You must have the Kick Members permission to use this.
-        """
-
-        print(duration)
-
-        if any(x.id == STAFF_ROLE for x in target.roles):
-            return await ctx.send("You can't punish staff members!")
-
-        created_at = datetime.utcnow()
-        expires_at = None
-        if duration is not None:
-            expires_at = created_at + duration
-
-        action = TradingMute(
-            target=target,
-            user=ctx.author,
-            reason=reason,
-            created_at=created_at,
-            expires_at=expires_at,
-            **message_channel(ctx, message),
-        )
-        await action.execute(ctx)
-        await action.notify()
-        if action.duration is None:
-            await ctx.send(f"Muted **{target}** in trading channels.")
-        else:
-            await ctx.send(
-                f"Muted **{target}** in trading channels for **{time.strfdelta(duration)}**."
-            )
-        self.bot.dispatch("action_perform", action)
-
-    @commands.command(aliases=("untradingmute", "tunmute", "untmute"))
-    @commands.guild_only()
-    @commands.has_permissions(kick_members=True)
-    async def tradingunmute(self, ctx, target: discord.Member, *, reason=None):
-        """Unmutes a member in trading channels.
-
-        You must have the Kick Members permission to use this.
-        """
-
-        action = TradingUnmute(target=target, user=ctx.author, reason=reason)
-        await action.execute(ctx)
-        await action.notify()
-        await ctx.send(f"Unmuted **{target}** in trading channels.")
-        self.bot.dispatch("action_perform", action)
-
     async def reverse_raw_action(self, raw_action):
         action = Action.build_from_mongo(self.bot, raw_action)
 
-        guild = self.bot.get_guild(GUILD_ID)
+        guild = self.bot.get_guild(self.bot.config.GUILD_ID)
         target = action.target
 
         if action.type == "ban":
@@ -643,8 +483,6 @@ class Moderation(commands.Cog):
             target = ban.user
         elif action.type == "mute":
             action_type = Unmute
-        elif action.type == "trading_mute":
-            action_type = TradingUnmute
         else:
             return
 
@@ -663,13 +501,15 @@ class Moderation(commands.Cog):
             {"_id": raw_action["_id"]}, {"$set": {"resolved": True}}
         )
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=15)
     async def check_actions(self):
-        await self.bot.wait_until_ready()
         query = {"resolved": False, "expires_at": {"$lt": datetime.utcnow()}}
-
         async for action in self.bot.mongo.db.action.find(query):
             self.bot.loop.create_task(self.reverse_raw_action(action))
+
+    @check_actions.before_loop
+    async def before_check_actions(self):
+        await self.bot.wait_until_ready()
 
     @commands.group(invoke_without_command=True)
     @commands.guild_only()

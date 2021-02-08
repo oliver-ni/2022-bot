@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "poketwo-support"
+name = "2023-bot"
 version = "0.1.0"
 description = ""
 authors = ["Oliver Ni <oliver.ni@gmail.com>"]

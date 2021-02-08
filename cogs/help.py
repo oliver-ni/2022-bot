@@ -95,8 +95,6 @@ class CustomHelpCommand(commands.HelpCommand):
                 ),
             )
 
-            # embed.set_author(name=f"Page {pidx + 1}/{len(pages)} ({total} commands)")
-
             return embed
 
         paginator = pagination.Paginator(get_page, len(pages) // 6 + 1)

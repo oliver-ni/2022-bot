@@ -6,15 +6,11 @@ import config
 
 COGS = [
     "bot",
-    "collectors",
-    "data",
     "help",
     "info",
     "logging",
     "moderation",
     "mongo",
-    "names",
-    "pricecheck",
     "tags",
 ]
 
