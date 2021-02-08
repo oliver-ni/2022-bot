@@ -67,7 +67,10 @@ class Verification(commands.Cog):
         role = discord.utils.get(guild.roles, name="Member")
         member = guild.get_member(user.id)
         await member.add_roles(role)
-        await member.edit(nick=data["name_display"])
+        try:
+            await member.edit(nick=data["name_display"])
+        except discord.Forbidden:
+            pass
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = f"Welcome, {data['name_display']}!"
