@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "2023-bot"
+name = "2022-bot"
 version = "0.1.0"
 description = ""
 authors = ["Oliver Ni <oliver.ni@gmail.com>"]

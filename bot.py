@@ -39,10 +39,6 @@ class Bot(commands.Bot, events.EventsMixin):
     def log(self):
         return self.get_cog("Logging").log
 
-    @property
-    def data(self):
-        return self.get_cog("Data").instance
-
     async def on_ready(self):
         self.log.info(f"Ready called.")
 
