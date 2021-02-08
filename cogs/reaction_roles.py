@@ -11,6 +11,8 @@ class ReactionRoles(commands.Cog):
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def rolemenu(self, ctx):
+        """Utilities for reaction role menus."""
+
         await ctx.send_help(ctx.command)
 
     async def get_menu(self, name, guild):

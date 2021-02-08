@@ -80,11 +80,18 @@ class Automod(commands.Cog):
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def automod(self, ctx):
+        """Utilities for automoderation."""
+
         await ctx.send_help(ctx.command)
 
     @automod.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def words(self, ctx):
+        """Displays the banned words list.
+
+        You must have the Administrator permission to use this.
+        """
+
         pages = menus.MenuPages(
             source=EmbedListPageSource(
                 await self.fetch_banned_words(ctx.guild),
