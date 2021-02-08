@@ -48,15 +48,15 @@ class Verification(commands.Cog):
             r = await client.get(f"{API_BASE_URL}/users/me", allow_redirects=False)
             if r.status_code == 303:
                 r = await client.get(r.headers["Location"])
-
             data = r.json()
-            if (
-                int(data["school_id"]) == self.bot.config.SCHOOLOGY_SCHOOL_ID
-                and int(data["grad_year"]) == self.bot.config.SCHOOLOGY_GRAD_YEAR
-            ):
-                await self.approve_user(user, data)
-            else:
-                await self.reject_user(user, data)
+
+        if (
+            int(data["school_id"]) == self.bot.config.SCHOOLOGY_SCHOOL_ID
+            and int(data["grad_year"]) == self.bot.config.SCHOOLOGY_GRAD_YEAR
+        ):
+            await self.approve_user(user, data)
+        else:
+            await self.reject_user(user, data)
 
     async def approve_user(self, user, data):
         await self.bot.mongo.db.member.update_one(
@@ -93,12 +93,17 @@ class Verification(commands.Cog):
             token = await client.fetch_request_token(REQUEST_URL)
             url = client.create_authorization_url(AUTH_URL)
 
-            await self.bot.redis.set(
-                f"oauth:{token['oauth_token']}",
-                json.dumps({"user_id": ctx.author.id, "token": token}),
-                expire=3600,
-            )
-            await ctx.send(url)
+        await self.bot.redis.set(
+            f"oauth:{token['oauth_token']}",
+            json.dumps({"user_id": ctx.author.id, "token": token}),
+            expire=3600,
+        )
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.title = "Sign in with Schoology"
+        embed.description = "Please verify that you are a member of the Lynbrook Class of 2022 by clicking the link above."
+        embed.url = url
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
