@@ -15,6 +15,8 @@ class Bot(commands.Cog):
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("This command cannot be used in private messages.")
+        elif isinstance(error, commands.PrivateMessageOnly):
+            await ctx.send("This command can only be used in private messages.")
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send("Sorry. This command is disabled and cannot be used.")
         elif isinstance(error, commands.BotMissingPermissions):
