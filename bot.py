@@ -7,6 +7,7 @@ from discord.ext.events import member_kick
 import config
 
 DEFAULT_COGS = [
+    "automod",
     "bot",
     "events",
     "help",

@@ -104,7 +104,7 @@ class Action(abc.ABC):
 
     @abc.abstractmethod
     async def execute(self, ctx):
-        pass
+        ctx.bot.dispatch("action_perform", self)
 
 
 class Kick(Action):
@@ -116,6 +116,7 @@ class Kick(Action):
     async def execute(self, ctx):
         reason = self.reason or f"Action done by {self.user} (ID: {self.user.id})"
         await ctx.guild.kick(self.target, reason=reason)
+        await super().execute(ctx)
 
 
 class Ban(Action):
@@ -127,6 +128,7 @@ class Ban(Action):
     async def execute(self, ctx):
         reason = self.reason or f"Action done by {self.user} (ID: {self.user.id})"
         await ctx.guild.ban(self.target, reason=reason)
+        await super().execute(ctx)
 
 
 class Unban(Action):
@@ -138,6 +140,7 @@ class Unban(Action):
     async def execute(self, ctx):
         reason = self.reason or f"Action done by {self.user} (ID: {self.user.id})"
         await ctx.guild.unban(self.target, reason=reason)
+        await super().execute(ctx)
 
 
 class Warn(Action):
@@ -147,7 +150,7 @@ class Warn(Action):
     color = discord.Color.orange()
 
     async def execute(self, ctx):
-        pass
+        await super().execute(ctx)
 
 
 class Mute(Action):
@@ -163,6 +166,7 @@ class Mute(Action):
         await ctx.bot.mongo.db.member.update_one(
             {"_id": self.target.id}, {"$set": {"muted": True}}, upsert=True
         )
+        await super().execute(ctx)
 
 
 class Unmute(Action):
@@ -178,6 +182,7 @@ class Unmute(Action):
         await ctx.bot.mongo.db.member.update_one(
             {"_id": self.target.id}, {"$set": {"muted": False}}, upsert=True
         )
+        await super().execute(ctx)
 
 
 cls_dict = {x.type: x for x in (Kick, Ban, Unban, Warn, Mute, Unmute)}
@@ -223,6 +228,7 @@ class Moderation(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.cls_dict = cls_dict
         self.check_actions.start()
 
     async def send_log_message(self, *args, **kwargs):
@@ -340,7 +346,6 @@ class Moderation(commands.Cog):
         await action.execute(ctx)
         await action.notify()
         await ctx.send(f"Warned **{target}**.")
-        self.bot.dispatch("action_perform", action)
 
     @commands.command()
     @commands.guild_only()
@@ -363,7 +368,6 @@ class Moderation(commands.Cog):
         await action.notify()
         await action.execute(ctx)
         await ctx.send(f"Kicked **{target}**.")
-        self.bot.dispatch("action_perform", action)
 
     @commands.command()
     @commands.guild_only()
@@ -395,7 +399,6 @@ class Moderation(commands.Cog):
             await ctx.send(f"Banned **{target}**.")
         else:
             await ctx.send(f"Banned **{target}** for **{time.strfdelta(duration)}**.")
-        self.bot.dispatch("action_perform", action)
 
     @commands.command()
     @commands.guild_only()
@@ -409,7 +412,6 @@ class Moderation(commands.Cog):
         action = Unban(target=target.user, user=ctx.author, reason=reason)
         await action.execute(ctx)
         await ctx.send(f"Unbanned **{target.user}**.")
-        self.bot.dispatch("action_perform", action)
 
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
@@ -441,7 +443,6 @@ class Moderation(commands.Cog):
             await ctx.send(f"Muted **{target}**.")
         else:
             await ctx.send(f"Muted **{target}** for **{time.strfdelta(duration)}**.")
-        self.bot.dispatch("action_perform", action)
 
     @mute.command(aliases=("sync",))
     @commands.has_permissions(administrator=True)
@@ -474,7 +475,6 @@ class Moderation(commands.Cog):
         await action.execute(ctx)
         await action.notify()
         await ctx.send(f"Unmuted **{target}**.")
-        self.bot.dispatch("action_perform", action)
 
     async def reverse_raw_action(self, raw_action):
         action = Action.build_from_mongo(self.bot, raw_action)
@@ -503,7 +503,6 @@ class Moderation(commands.Cog):
 
         await action.execute(FakeContext(self.bot, guild))
         await action.notify()
-        self.bot.dispatch("action_perform", action)
 
         await self.bot.mongo.db.action.update_one(
             {"_id": raw_action["_id"]}, {"$set": {"resolved": True}}
