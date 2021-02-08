@@ -443,7 +443,7 @@ class Moderation(commands.Cog):
             await ctx.send(f"Muted **{target}** for **{time.strfdelta(duration)}**.")
         self.bot.dispatch("action_perform", action)
 
-    @mute.command()
+    @mute.command(aliases=("sync",))
     @commands.has_permissions(administrator=True)
     async def setup(self, ctx):
         """Sets up the Muted role's permissions.
@@ -458,6 +458,8 @@ class Moderation(commands.Cog):
         for channel in ctx.guild.channels:
             if isinstance(channel, CategoryChannel) or not channel.permissions_synced:
                 await channel.set_permissions(role, send_messages=False, speak=False, stream=False)
+
+        await ctx.send("Set up permissions for the Muted role.")
 
     @commands.command()
     @commands.guild_only()
