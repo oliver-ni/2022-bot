@@ -1,3 +1,4 @@
+from pathlib import Path
 import discord
 from discord.ext import commands, events
 from discord.ext.events import member_kick
@@ -48,5 +49,7 @@ class Bot(commands.Bot, events.EventsMixin):
 
 
 if __name__ == "__main__":
+    Path("logs").mkdir(exist_ok=True)
+    Path("attachments").mkdir(exist_ok=True)
     bot = Bot()
     bot.run(config.BOT_TOKEN)

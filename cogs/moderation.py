@@ -5,12 +5,12 @@ from datetime import datetime
 from typing import Optional, Union
 
 import discord
+from discord import CategoryChannel
 from discord.ext import commands, menus, tasks
 from discord.ext.events.utils import fetch_recent_audit_log_entry
 from helpers import time
 from helpers.pagination import AsyncFieldsPageSource
 from helpers.utils import FakeUser, FetchUserConverter
-
 
 TimeDelta = Optional[time.TimeDelta]
 
@@ -419,7 +419,7 @@ class Moderation(commands.Cog):
         await ctx.send(f"Unbanned **{target.user}**.")
         self.bot.dispatch("action_perform", action)
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     async def mute(
@@ -452,6 +452,24 @@ class Moderation(commands.Cog):
         else:
             await ctx.send(f"Muted **{target}** for **{time.strfdelta(duration)}**.")
         self.bot.dispatch("action_perform", action)
+
+    @mute.command()
+    @commands.has_permissions(administrator=True)
+    async def setup(self, ctx):
+        """Sets up the Muted role's permissions.
+
+        You must have the Administrator permission to use this.
+        """
+
+        role = discord.utils.get(ctx.guild.roles, name="Muted")
+        if role is None:
+            return await ctx.send("Please create a role named Muted first.")
+
+        for channel in ctx.guild.channels:
+            if isinstance(channel, CategoryChannel) or not channel.permissions_synced:
+                await channel.set_permissions(
+                    role, send_messages=False, speak=False, stream=False
+                )
 
     @commands.command()
     @commands.guild_only()
