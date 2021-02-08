@@ -6,18 +6,16 @@ from discord.ext.events import member_kick
 
 import config
 
-COGS = [
+DEFAULT_COGS = [
     "bot",
     "events",
     "help",
     "info",
-    "levels",
     "logging",
     "moderation",
     "mongo",
     "redis",
     "tags",
-    "trivia",
     "verification",
 ]
 
@@ -36,7 +34,10 @@ class Bot(commands.Bot, events.EventsMixin):
         self.ipc = ipc.Server(self, secret_key=config.SECRET_KEY)
 
         self.load_extension("jishaku")
-        for i in COGS:
+        for i in DEFAULT_COGS:
+            self.load_extension(f"cogs.{i}")
+
+        for i in getattr(config, "EXTRA_COGS", []):
             self.load_extension(f"cogs.{i}")
 
     @property

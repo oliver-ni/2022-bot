@@ -4,8 +4,6 @@ import random
 import discord
 from discord.ext import commands, menus
 
-ANNOUNCE_CHANNEL = 807387877725175858
-
 
 class Levels(commands.Cog):
     """For XP and levels."""
@@ -35,9 +33,8 @@ class Levels(commands.Cog):
             await self.bot.mongo.db.member.update_one(
                 {"_id": message.author.id}, {"$inc": {"level": 1}}
             )
-            channel = self.bot.get_channel(ANNOUNCE_CHANNEL)
             msg = f"Congratulations {message.author.mention}, you are now level **{user.get('level', 0) + 1}**!"
-            await channel.send(msg)
+            await message.channel.send(msg)
 
     @commands.command(aliases=("rank", "level"))
     async def xp(self, ctx):

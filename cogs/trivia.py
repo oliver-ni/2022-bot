@@ -7,9 +7,6 @@ from datetime import datetime
 import discord
 from discord.ext import commands, tasks
 from helpers.constants import LETTER_REACTIONS
-from helpers.time import strfdelta
-
-EVENT_CHANNEL = 807393812372389899
 
 
 async def add_reactions(message, *reactions):
@@ -77,7 +74,7 @@ class FoodTriviaEvent(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def start_game(self):
-        channel = self.bot.get_channel(EVENT_CHANNEL)
+        channel = self.bot.get_channel(self.bot.config.TRIVIA_CHANNEL_ID)
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = "A new Food Trivia round is starting!"
         embed.description = "Compete to answer the questions the fastest!"
