@@ -53,7 +53,7 @@ class Automod(commands.Cog):
         query = {
             "target_id": ctx.author.id,
             "user_id": self.bot.user.id,
-            "created_at": {"$gt": datetime.utcnow() - timedelta(weeks=1)},
+            "created_at": {"$gt": datetime.utcnow() - timedelta(days=1)},
         }
         count = await self.bot.mongo.db.action.count_documents(query)
 
