@@ -73,7 +73,7 @@ class FoodTriviaEvent(commands.Cog):
         else:
             return user
 
-    @tasks.loop(minutes=15)
+    @tasks.loop(minutes=30)
     async def start_game(self):
         channel = self.bot.get_channel(self.bot.config.TRIVIA_CHANNEL_ID)
         embed = discord.Embed(color=discord.Color.blurple())
@@ -99,8 +99,8 @@ class FoodTriviaEvent(commands.Cog):
     @start_game.before_loop
     async def before_start_game(self):
         dt = datetime.now()
-        prev_quarter = dt.replace(minute=15 * (dt.minute // 15), second=0, microsecond=0)
-        await discord.utils.sleep_until(prev_quarter + timedelta(minutes=15))
+        prev_half = dt.replace(minute=30 * (dt.minute // 30), second=0, microsecond=0)
+        await discord.utils.sleep_until(prev_half + timedelta(minutes=30))
         await self.bot.wait_until_ready()
 
     @commands.command(aliases=("eventlb", "eventtop", "etop"))
