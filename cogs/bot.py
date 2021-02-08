@@ -38,9 +38,7 @@ class Bot(commands.Cog):
             return
         else:
             print(f"Ignoring exception in command {ctx.command}")
-            traceback.print_exception(
-                type(error), error, error.__traceback__, file=sys.stderr
-            )
+            traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     @commands.Cog.listener()
     async def on_error(self, event, error):
@@ -48,9 +46,7 @@ class Bot(commands.Cog):
             return
         else:
             print(f"Ignoring exception in event {event}:")
-            traceback.print_exception(
-                type(error), error, error.__traceback__, file=sys.stderr
-            )
+            traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     @commands.command()
     async def ping(self, ctx):
