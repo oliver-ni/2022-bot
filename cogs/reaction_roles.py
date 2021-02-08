@@ -28,6 +28,11 @@ class ReactionRoles(commands.Cog):
     @rolemenu.command(name="create")
     @commands.has_permissions(administrator=True)
     async def create(self, ctx, message: discord.Message, *, name):
+        """Creates a role menu on a certain message.
+
+        You must have the Administrator permission to use this.
+        """
+
         if message.guild.id != ctx.guild.id:
             return await ctx.send("Cannot create role menu in different guild.")
 
@@ -45,12 +50,22 @@ class ReactionRoles(commands.Cog):
     @rolemenu.command(name="list")
     @commands.has_permissions(administrator=True)
     async def list(self, ctx):
+        """Lists this server's role menus.
+
+        You must have the Administrator permission to use this.
+        """
+
         rr = await self.bot.mongo.db.rolemenu.find({"guild_id": ctx.guild.id}).to_list(None)
         await ctx.send(f"Role Menus:\n\n" + "\n".join(f"**{r['name']}**" for r in rr))
 
     @rolemenu.command(name="delete")
     @commands.has_permissions(administrator=True)
     async def delete(self, ctx, name):
+        """Deletes an existing role menu.
+
+        You must have the Administrator permission to use this.
+        """
+
         result = await self.bot.mongo.db.rolemenu.delete_one(
             {"name": name, "guild_id": ctx.guild.id}
         )
@@ -62,6 +77,11 @@ class ReactionRoles(commands.Cog):
     @rolemenu.command(name="view")
     @commands.has_permissions(administrator=True)
     async def view(self, ctx, name):
+        """Shows information about a role menu.
+
+        You must have the Administrator permission to use this.
+        """
+
         obj = await self.get_menu(name, ctx.guild)
         if obj is None:
             return await ctx.send("Could not find role menu with that name.")
@@ -83,6 +103,11 @@ class ReactionRoles(commands.Cog):
     @rolemenu.command(name="add")
     @commands.has_permissions(administrator=True)
     async def add(self, ctx, name, emoji, role: discord.Role):
+        """Adds an emoji and role to a role menu.
+
+        You must have the Administrator permission to use this.
+        """
+
         menu = await self.get_menu(name, ctx.guild)
         if menu is None:
             return await ctx.send("Could not find role menu with that name.")
@@ -111,6 +136,11 @@ class ReactionRoles(commands.Cog):
     @rolemenu.command(name="remove")
     @commands.has_permissions(administrator=True)
     async def rolemenu_remove(self, ctx, name, emoji):
+        """Removes an emoji and role from a role menu.
+
+        You must have the Administrator permission to use this.
+        """
+
         menu = await self.get_menu(name, ctx.guild)
         if menu is None:
             return await ctx.send("Could not find role menu with that name.")

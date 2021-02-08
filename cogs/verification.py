@@ -84,6 +84,8 @@ class Verification(commands.Cog):
     @commands.command()
     @commands.dm_only()
     async def verify(self, ctx):
+        """Verify yourself to access the server."""
+
         guild = self.bot.get_guild(self.bot.config.GUILD_ID)
         member = guild.get_member(ctx.author.id)
         if discord.utils.get(member.roles, name="Member") is not None:

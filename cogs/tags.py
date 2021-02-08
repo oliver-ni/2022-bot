@@ -132,9 +132,7 @@ class Tags(commands.Cog):
     async def search(self, ctx, *, text):
         """Searches for a tag."""
 
-        await self.send_tags(
-            ctx, self.query_tags({"$text": {"$search": text}}, sort=False)
-        )
+        await self.send_tags(ctx, self.query_tags({"$text": {"$search": text}}, sort=False))
 
     @tag.command()
     async def list(self, ctx, *, member: discord.Member = None):
@@ -186,9 +184,7 @@ class Tags(commands.Cog):
         if tag.alias:
             return await ctx.send("You cannot edit an alias.")
 
-        await self.bot.mongo.db.tag.update_one(
-            {"_id": tag.id}, {"$set": {"content": content}}
-        )
+        await self.bot.mongo.db.tag.update_one({"_id": tag.id}, {"$set": {"content": content}})
         await ctx.send(f"Successfully edited tag.")
 
     @tag.command()
@@ -208,7 +204,10 @@ class Tags(commands.Cog):
     @commands.has_permissions(administrator=True)
     @tag.command()
     async def forcedelete(self, ctx, *, name):
-        """Removes a tag by force."""
+        """Removes a tag by force.
+
+        You must have the Administrator permission to use this.
+        """
 
         tag = await self.get_tag(name)
         if tag is None:
@@ -221,7 +220,10 @@ class Tags(commands.Cog):
     @commands.has_permissions(administrator=True)
     @tag.command()
     async def forceedit(self, ctx, name, *, content):
-        """Edits a tag by force."""
+        """Edits a tag by force.
+
+        You must have the Administrator permission to use this.
+        """
 
         tag = await self.get_tag(name)
         if tag is None:
@@ -229,9 +231,7 @@ class Tags(commands.Cog):
         if tag.alias:
             return await ctx.send("You cannot edit an alias.")
 
-        await self.bot.mongo.db.tag.update_one(
-            {"_id": tag.id}, {"$set": {"content": content}}
-        )
+        await self.bot.mongo.db.tag.update_one({"_id": tag.id}, {"$set": {"content": content}})
         await ctx.send(f"Successfully force edited tag.")
 
 

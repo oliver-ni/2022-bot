@@ -38,6 +38,8 @@ class Levels(commands.Cog):
 
     @commands.command(aliases=("rank", "level"))
     async def xp(self, ctx):
+        """Shows your server XP and level."""
+
         user = await self.bot.mongo.db.member.find_one({"_id": ctx.author.id})
         rank = await self.bot.mongo.db.member.count_documents({"xp": {"$gt": user.get("xp", 0)}})
         xp, level = user.get("xp", 0), user.get("level", 0)
@@ -54,6 +56,8 @@ class Levels(commands.Cog):
 
     @commands.command(aliases=("top", "lb", "levels"))
     async def leaderboard(self, ctx):
+        """Displays the server XP leaderboard."""
+
         users = self.bot.mongo.db.member.find().sort("xp", -1)
         count = await self.bot.mongo.db.member.count_documents({})
 

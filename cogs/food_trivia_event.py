@@ -105,6 +105,8 @@ class FoodTriviaEvent(commands.Cog):
 
     @commands.command(aliases=("eventlb", "eventtop", "etop"))
     async def eventleaderboard(self, ctx):
+        """Displays the leaderboard for the Food Trivia event."""
+
         users = self.bot.mongo.db.member.find().sort("food_trivia_points", -1)
         count = await self.bot.mongo.db.member.count_documents({})
 

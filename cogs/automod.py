@@ -97,6 +97,11 @@ class Automod(commands.Cog):
     @words.command()
     @commands.has_permissions(administrator=True)
     async def add(self, ctx, *words):
+        """Adds words to the banned words list.
+
+        You must have the Administrator permission to use this.
+        """
+
         await self.update_banned_words(ctx.guild, push=[x.casefold() for x in words])
         words_msg = ", ".join(f"**{x}**" for x in words)
         await ctx.send(f"Added {words_msg} to the banned words list.")
@@ -104,6 +109,11 @@ class Automod(commands.Cog):
     @words.command()
     @commands.has_permissions(administrator=True)
     async def remove(self, ctx, *words):
+        """Removes words from the banned words list.
+
+        You must have the Administrator permission to use this.
+        """
+
         await self.update_banned_words(ctx.guild, pull=[x.casefold() for x in words])
         words_msg = ", ".join(f"**{x}**" for x in words)
         await ctx.send(f"Removed {words_msg} from the banned words list.")

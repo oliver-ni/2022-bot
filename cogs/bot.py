@@ -50,7 +50,7 @@ class Bot(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx):
-        """View the bot's latency."""
+        """Views the bot's latency."""
 
         message = await ctx.send("Pong!")
         seconds = (message.created_at - ctx.message.created_at).total_seconds()
