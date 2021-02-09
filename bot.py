@@ -55,7 +55,7 @@ class Bot(commands.Bot, events.EventsMixin):
         return self.get_cog("Logging").log
 
     async def on_ready(self):
-        self.log.info(f"Ready called.")
+        print(f"Ready called.")
 
     async def on_ipc_ready(self):
         print("IPC is ready.")
@@ -64,7 +64,7 @@ class Bot(commands.Bot, events.EventsMixin):
         print(endpoint, "raised", error)
 
     async def close(self):
-        self.log.info("Shutting down")
+        print("Shutting down")
         await super().close()
 
 
