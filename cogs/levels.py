@@ -41,7 +41,9 @@ class Levels(commands.Cog):
         """Shows your server XP and level."""
 
         user = await self.bot.mongo.db.member.find_one({"_id": ctx.author.id})
-        rank = await self.bot.mongo.db.member.count_documents({"xp": {"$gt": user.get("xp", 0)}})
+        rank = await self.bot.mongo.db.member.count_documents(
+            {"xp": {"$gt": user.get("xp", 0)}, "_id": {"$ne": ctx.author.id}}
+        )
         xp, level = user.get("xp", 0), user.get("level", 0)
         progress = xp - self.min_xp_at(level)
         required = self.min_xp_at(level + 1) - self.min_xp_at(level)
