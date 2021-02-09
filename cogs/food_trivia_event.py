@@ -81,7 +81,6 @@ class FoodTriviaEvent(commands.Cog):
         embed.description = "Compete to answer the questions the fastest!"
         embed.set_footer(text="The round will start in 30 seconds.")
         await channel.send(embed=embed)
-
         await asyncio.sleep(30)
 
         for i in range(20):
@@ -95,6 +94,10 @@ class FoodTriviaEvent(commands.Cog):
                 await self.bot.mongo.db.member.update_one(
                     {"_id": user.id}, {"$inc": {"food_trivia_points": 1}}, upsert=True
                 )
+
+        await channel.send(
+            "The round has ended. Come back at the next half hour for more questions!"
+        )
 
     @start_game.before_loop
     async def before_start_game(self):
