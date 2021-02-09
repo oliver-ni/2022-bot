@@ -53,9 +53,9 @@ class Automod(commands.Cog):
         query = {
             "target_id": ctx.author.id,
             "user_id": self.bot.user.id,
-            "created_at": {"$gt": datetime.utcnow() - timedelta(days=1)},
+            "created_at": {"$gt": datetime.utcnow() - timedelta(hours=1)},
         }
-        count = await self.bot.mongo.db.action.count_documents(query)
+        count = await self.bot.mongo.db.action.count_documents(query) + 1
 
         kwargs = {
             "target": ctx.author,
@@ -64,12 +64,9 @@ class Automod(commands.Cog):
             "created_at": datetime.utcnow(),
         }
 
-        if count >= 4:
+        if count >= 10:
             action_cls = cog.cls_dict["mute"]
             kwargs["expires_at"] = kwargs["created_at"] + timedelta(days=1)
-        elif count >= 2:
-            action_cls = cog.cls_dict["mute"]
-            kwargs["expires_at"] = kwargs["created_at"] + timedelta(hours=1)
         else:
             action_cls = cog.cls_dict["warn"]
 
