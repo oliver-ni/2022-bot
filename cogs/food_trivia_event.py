@@ -87,7 +87,7 @@ class FoodTriviaEvent(commands.Cog):
         await channel.send(embed=embed)
         await asyncio.sleep(30)
 
-        for i in range(10):
+        for i in range(20):
             if i > 0:
                 embed = discord.Embed(color=discord.Color.blurple())
                 embed.title = "Current Round Standings"
