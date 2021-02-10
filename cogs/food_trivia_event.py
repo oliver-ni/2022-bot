@@ -2,7 +2,8 @@ import asyncio
 import json
 import random
 import string
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Counter
 
 import discord
 from discord.ext import commands, menus, tasks
@@ -57,7 +58,7 @@ class FoodTriviaEvent(commands.Cog):
 
             if answers[user.id] == question["correct_choice"]:
                 delta = datetime.utcnow() - message.created_at
-                msg = f"{user.mention} correctly answered **{question['answer']}** in **{delta.total_seconds():.02f}s**! + 1 point"
+                msg = f"{user.mention} correctly answered **{question['answer']}** in **{delta.total_seconds():.02f}s**! +1 point"
                 self.bot.loop.create_task(channel.send(msg))
                 return True
             else:
@@ -69,13 +70,16 @@ class FoodTriviaEvent(commands.Cog):
             reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=20)
         except asyncio.TimeoutError:
             await channel.send("No one answered the question correctly in time!")
-            return None
+            return None, answers
         else:
-            return user
+            return user, answers
 
     @tasks.loop(minutes=30)
     async def start_game(self):
+        guild = self.bot.get_guild(self.bot.config.GUILD_ID)
         channel = self.bot.get_channel(self.bot.config.TRIVIA_CHANNEL_ID)
+        users = Counter()
+
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = "A new Food Trivia round is starting!"
         embed.description = "Compete to answer the questions the fastest!"
@@ -83,38 +87,43 @@ class FoodTriviaEvent(commands.Cog):
         await channel.send(embed=embed)
         await asyncio.sleep(30)
 
-        event_points = {}
-
-        for i in range(20):
-            if i != 0:
-                await channel.send("The next question will be sent in 15 seconds.")
+        for i in range(10):
+            if i > 0:
+                embed = discord.Embed(color=discord.Color.blurple())
+                embed.title = "Current Round Standings"
+                lines = [f"**{guild.get_member(u).display_name}:** {x}" for u, x in users.items()]
+                embed.description = "\n".join(lines)
+                embed.set_footer(text="The next question will be sent in 15 seconds.")
+                await channel.send(embed=embed)
                 await asyncio.sleep(15)
 
-            question = self.get_question()
-            user = await self.send_question(question, channel)
+            user, answers = await self.send_question(self.get_question(), channel)
+            users.update({x: 0 for x in answers})
             if user is not None:
                 await self.bot.mongo.db.member.update_one(
                     {"_id": user.id}, {"$inc": {"food_trivia_points": 1}}, upsert=True
                 )
-                if user.id in event_points.keys():
-                    event_points[user.id] += 1
-                else:
-                    event_points[user.id] = 1
-        
-        winner_id = max(event_points, key=event_points.get)
+                users[user.id] += 1
+
+        winner_id, score = users.most_common(1)[0]
+        bonus = len(users) * 2
+
+        embed = discord.Embed(color=discord.Color.blurple())
         embed.title = "The Food Trivia round has ended."
-        embed.description = f"<@!{winner_id}> won this round! (+10)"
+        embed.description = (
+            f"<@!{winner_id}> won the round with a score of {score}! (+{bonus} bonus points)"
+        )
         embed.set_footer(text="Come back at the next half hour for more questions!")
         await channel.send(embed=embed)
         await self.bot.mongo.db.member.update_one(
-            {"_id": winner_id}, {"$inc": {"food_trivia_points": 10}}, upsert=True
+            {"_id": winner_id}, {"$inc": {"food_trivia_points": bonus}}, upsert=True
         )
 
     @start_game.before_loop
     async def before_start_game(self):
         dt = datetime.now()
         prev_half = dt.replace(minute=30 * (dt.minute // 30), second=0, microsecond=0)
-        await discord.utils.sleep_until(prev_half + timedelta(minutes=30))
+        # await discord.utils.sleep_until(prev_half + timedelta(minutes=30))
         await self.bot.wait_until_ready()
 
     @commands.command(aliases=("eventlb", "eventtop", "etop"))
