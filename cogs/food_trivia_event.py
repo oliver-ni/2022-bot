@@ -83,6 +83,8 @@ class FoodTriviaEvent(commands.Cog):
         await channel.send(embed=embed)
         await asyncio.sleep(30)
 
+        event_points = {}
+
         for i in range(20):
             if i != 0:
                 await channel.send("The next question will be sent in 15 seconds.")
@@ -94,9 +96,18 @@ class FoodTriviaEvent(commands.Cog):
                 await self.bot.mongo.db.member.update_one(
                     {"_id": user.id}, {"$inc": {"food_trivia_points": 1}}, upsert=True
                 )
-
-        await channel.send(
-            "The round has ended. Come back at the next half hour for more questions!"
+                if user.id in event_points.keys():
+                    event_points[user.id] += 1
+                else:
+                    event_points[user.id] = 1
+        
+        winner_id = max(event_points, key=event_points.get)
+        embed.title = "The Food Trivia round has ended."
+        embed.description = f"<@!{winner_id}> won this round! (+10)"
+        embed.set_footer(text="Come back at the next half hour for more questions!")
+        await channel.send(embed=embed)
+        await self.bot.mongo.db.member.update_one(
+            {"_id": winner_id}, {"$inc": {"food_trivia_points": 10}}, upsert=True
         )
 
     @start_game.before_loop
