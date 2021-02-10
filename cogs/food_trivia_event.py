@@ -123,7 +123,7 @@ class FoodTriviaEvent(commands.Cog):
     async def before_start_game(self):
         dt = datetime.now()
         prev_half = dt.replace(minute=30 * (dt.minute // 30), second=0, microsecond=0)
-        # await discord.utils.sleep_until(prev_half + timedelta(minutes=30))
+        await discord.utils.sleep_until(prev_half + timedelta(minutes=30))
         await self.bot.wait_until_ready()
 
     @commands.command(aliases=("eventlb", "eventtop", "etop"))
