@@ -105,6 +105,11 @@ class FoodTriviaEvent(commands.Cog):
                 )
                 users[user.id] += 1
 
+        if len(users) == 0:
+            return await channel.send(
+                "No one participated. Come at the next half hour for more questions!"
+            )
+
         winner_id, score = users.most_common(1)[0]
         bonus = len(users) * 2
 
