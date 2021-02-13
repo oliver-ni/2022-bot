@@ -16,7 +16,7 @@ class Levels(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
+        if message.guild is None or message.author.bot:
             return
 
         # Set 60s timeout between messages
