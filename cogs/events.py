@@ -17,6 +17,7 @@ async def list_calendar(aiogoogle, calendar_id):
     return await aiogoogle.as_service_account(
         calendar_v3.events.list(
             calendarId=calendar_id,
+            singleEvents=True,
             timeMin=datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             timeMax=(datetime.now() + timedelta(weeks=4)).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         )
@@ -45,14 +46,11 @@ class Events(commands.Cog):
                 **json.load(f),
             )
 
-    @commands.command()
-    async def events(self, ctx):
-        """Displays information about upcoming events."""
-
+    def construct_events_embed(self, events, *, title):
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.title = "All Events"
+        embed.title = title
 
-        for event in self.class_events["items"] + self.asb_events["items"]:
+        for event in events:
             start = parse(event["start"]["date"])
             end = parse(event["end"]["date"])
             date = (
@@ -62,7 +60,17 @@ class Events(commands.Cog):
             )
             embed.add_field(name=event["summary"], value=date, inline=False)
 
-        await ctx.send(embed=embed)
+        return embed
+
+    @commands.command()
+    async def events(self, ctx):
+        """Displays information about upcoming events."""
+
+        asb_embed = self.construct_events_embed(self.asb_events["items"], title="ASB Events")
+        class_embed = self.construct_events_embed(self.class_events["items"], title="Class Events")
+
+        await ctx.send(embed=asb_embed)
+        await ctx.send(embed=class_embed)
 
 
 def setup(bot):
