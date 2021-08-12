@@ -66,7 +66,7 @@ class Verification(commands.Cog):
         )
 
         guild = self.bot.get_guild(self.bot.config.GUILD_ID)
-        role = discord.utils.get(guild.roles, name="Member")
+        role = discord.utils.get(guild.roles, name="Verified")
         member = guild.get_member(user.id)
         await member.add_roles(role)
         try:
@@ -76,11 +76,11 @@ class Verification(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = f"Welcome, {data['name_display']}!"
-        embed.description = "Welcome to the Lynbrook Class of 2022 server! You now have full access to the server. Please make sure to follow the rules at all times!"
+        embed.description = "Welcome to the Lynbrook Class of 2025 server! You now have full access to the server. Please make sure to follow the rules at all times!"
         await user.send(embed=embed)
 
     async def reject_user(self, user, data):
-        msg = f"Hi {data['name_display']}, unfortunately only Lynbrook students from the Class of 2022 are allowed to join the server at this time."
+        msg = f"Hi {data['name_display']}, unfortunately only Lynbrook students from the Class of 2025 are allowed to join the server at this time."
         await user.send(msg)
 
     @commands.command()
@@ -90,7 +90,7 @@ class Verification(commands.Cog):
 
         guild = self.bot.get_guild(self.bot.config.GUILD_ID)
         member = guild.get_member(ctx.author.id)
-        if discord.utils.get(member.roles, name="Member") is not None:
+        if discord.utils.get(member.roles, name="Verified") is not None:
             return await ctx.send("You are already verified!")
 
         async with self.client(verifier=str(ctx.author.id)) as client:
@@ -105,7 +105,7 @@ class Verification(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = "Sign in with Schoology"
-        embed.description = "Please verify that you are a member of the Lynbrook Class of 2022 by clicking the link above."
+        embed.description = "Please verify that you are a member of the Lynbrook Class of 2025 by clicking the link above."
         embed.url = url
         await ctx.send(embed=embed)
 
