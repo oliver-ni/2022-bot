@@ -7,17 +7,11 @@ from discord.ext.events import member_kick
 import config
 
 DEFAULT_COGS = [
-    "automod",
     "bot",
-    "events",
     "help",
     "info",
-    "logging",
-    "moderation",
     "mongo",
-    "reaction_roles",
     "redis",
-    "tags",
     "verification",
 ]
 
