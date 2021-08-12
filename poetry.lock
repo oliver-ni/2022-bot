@@ -228,12 +228,19 @@ description = "A discord.py extension for inter-process communication."
 category = "main"
 optional = false
 python-versions = ">=3.5.3"
+develop = false
 
 [package.dependencies]
 "discord.py" = "*"
 
 [package.extras]
 docs = ["sphinx", "sphinxcontrib-trio", "sphinx-rtd-theme"]
+
+[package.source]
+type = "git"
+url = "https://github.com/Ext-Creators/discord-ext-ipc.git"
+reference = "main"
+resolved_reference = "696a9f4bee934c28a7984eb6bb7d0a57e8463573"
 
 [[package]]
 name = "discord-ext-menus"
@@ -650,7 +657,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "fc11fc01b1edf26f1050d6192d5c14650537899f484f6e547ba53c9d88c937f6"
+content-hash = "c01049ad493220417faf847bff5bd8c128c70fa1caeb41cc25153ba67a37660a"
 
 [metadata.files]
 aiofiles = [
@@ -809,10 +816,7 @@ cryptography = [
     {file = "cryptography-3.4.7.tar.gz", hash = "sha256:3d10de8116d25649631977cb37da6cbdd2d6fa0e0281d014a5b7d337255ca713"},
 ]
 discord-ext-events = []
-discord-ext-ipc = [
-    {file = "discord-ext-ipc-2.1.1.tar.gz", hash = "sha256:cb3056398016d70bc22928241d8c891959c70bf8c03ac0c5dcbffc5c22e86474"},
-    {file = "discord_ext_ipc-2.1.1-py3-none-any.whl", hash = "sha256:71729cfabfe6eafdc1ca97b7618ea3988e1ff58031af19b073bab69bec6feae4"},
-]
+discord-ext-ipc = []
 discord-ext-menus = []
 "discord.py" = [
     {file = "discord.py-1.7.3-py3-none-any.whl", hash = "sha256:c6f64db136de0e18e090f6752ea68bdd4ab0a61b82dfe7acecefa22d6477bb0c"},
