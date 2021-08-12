@@ -52,6 +52,7 @@ class Verification(commands.Cog):
 
         if (
             int(data["school_id"]) == self.bot.config.SCHOOLOGY_SCHOOL_ID
+            and int(data["building_id"]) == self.bot.config.SCHOOLOGY_BUILDING_ID
             and int(data["grad_year"]) == self.bot.config.SCHOOLOGY_GRAD_YEAR
         ):
             await self.approve_user(user, data)
