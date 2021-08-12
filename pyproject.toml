@@ -13,13 +13,13 @@ discord-ext-menus = {git = "https://github.com/oliver-ni/discord-ext-menus.git"}
 dnspython = "^2.0.0"
 discord-ext-events = {git = "https://github.com/Ext-Creators/discord-ext-events.git"}
 durations-nlp = "^1.0.1"
-aiogoogle = {git = "https://github.com/oliver-ni/aiogoogle.git", branch = "patch-1"}
+aiogoogle = "^2.0.1"
 python-dateutil = "^2.8.1"
 httpx = "^0.16.1"
 Authlib = "^0.15.3"
 starlette = "^0.14.2"
 uvicorn = "^0.13.3"
-discord-ext-ipc = {git = "https://github.com/Ext-Creators/discord-ext-ipc"}
+discord-ext-ipc = "^2.1.1"
 aioredis = "^1.3.1"
 Jinja2 = "^2.11.3"
 
