@@ -27,7 +27,7 @@ class Bot(commands.Bot, events.EventsMixin):
         )
 
         self.config = config
-        self.ipc = ipc.Server(self, secret_key=config.SECRET_KEY)
+        self.ipc = ipc.Server(self, secret_key=config.SECRET_KEY, port=8766, multicast_port=20001)
 
         self.load_extension("jishaku")
         for i in DEFAULT_COGS:

@@ -5,7 +5,7 @@ from starlette.templating import Jinja2Templates
 
 import config
 
-ipc_client = ipc.Client(secret_key=config.SECRET_KEY)
+ipc_client = ipc.Client(secret_key=config.SECRET_KEY, port=8766, multicast_port=20001)
 app = Starlette(debug=True)
 
 templates = Jinja2Templates(directory="templates")
