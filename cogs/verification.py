@@ -1,8 +1,10 @@
-import discord
 import json
+from typing import Union
 
+import discord
 from discord.ext import commands, ipc
 from helpers.oauth import AsyncSchoologyOAuth1Client
+from helpers.utils import FetchUserConverter
 
 API_BASE_URL = "https://api.schoology.com/v1"
 SCHOOLOGY_URL = "https://fuhsd.schoology.com"
@@ -51,6 +53,12 @@ class Verification(commands.Cog):
             data = r.json()
 
         if (
+            await self.bot.mongo.db.member.find_one({"_id": user.id, "blacklisted": True})
+            is not None
+        ):
+            return {"status": "success", "result": "blacklisted"}
+
+        if (
             int(data["school_id"]) == self.bot.config.SCHOOLOGY_SCHOOL_ID
             and int(data["building_id"]) == self.bot.config.SCHOOLOGY_BUILDING_ID
             and int(data["grad_year"]) == self.bot.config.SCHOOLOGY_GRAD_YEAR
@@ -84,7 +92,7 @@ class Verification(commands.Cog):
         msg = f"Hi {data['name_display']}, unfortunately only Lynbrook students from the Class of 2025 are allowed to join the server at this time."
         await user.send(msg)
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @commands.dm_only()
     async def verify(self, ctx):
         """Verify yourself to access the server."""
@@ -109,6 +117,36 @@ class Verification(commands.Cog):
         embed.description = "Please verify that you are a member of the Lynbrook Class of 2025 by clicking the link above."
         embed.url = url
         await ctx.send(embed=embed)
+
+    @verify.command()
+    @commands.has_permissions(ban_members=True)
+    async def blacklist(self, ctx, user: Union[discord.Member, FetchUserConverter]):
+        """Restricts a user from being able to verify.
+
+        You must have the Ban Members permission to use this.
+        """
+
+        result = await self.bot.mongo.db.member.update_one(
+            {"_id": user.id}, {"$set": {"blacklisted": True}}, upsert=True
+        )
+        if result.modified_count == 0 and result.upserted_id is None:
+            return await ctx.send(f"That user is already blacklisted!")
+        await ctx.send(f"Blacklisted **{user}**.")
+
+    @verify.command()
+    @commands.has_permissions(ban_members=True)
+    async def unblacklist(self, ctx, user: Union[discord.Member, FetchUserConverter]):
+        """Removes a user from the verification blacklist.
+
+        You must have the Ban Members permission to use this.
+        """
+
+        result = await self.bot.mongo.db.member.update_one(
+            {"_id": user.id}, {"$unset": {"blacklisted": 1}}
+        )
+        if result.modified_count == 0:
+            return await ctx.send("This user is not blacklisted.")
+        await ctx.send(f"Unblacklisted **{user}**.")
 
 
 def setup(bot):
