@@ -85,11 +85,11 @@ class Verification(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = f"Welcome, {data['name_display']}!"
-        embed.description = "Welcome to the Lynbrook Class of 2025 server! You now have full access to the server. Please make sure to follow the rules at all times!"
+        embed.description = "Welcome to the Monta Vista class of 2025 server! You now have full access to the server. Please make sure to follow the rules at all times!"
         await user.send(embed=embed)
 
     async def reject_user(self, user, data):
-        msg = f"Hi {data['name_display']}, unfortunately only Lynbrook students from the Class of 2025 are allowed to join the server at this time."
+        msg = f"Hi {data['name_display']}, unfortunately only Monta Vista students from the Class of 2025 are allowed to join the server at this time."
         await user.send(msg)
 
     @commands.group(invoke_without_command=True)
@@ -114,7 +114,7 @@ class Verification(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = "Sign in with Schoology"
-        embed.description = "Please verify that you are a member of the Lynbrook Class of 2025 by clicking the link above."
+        embed.description = "Please verify that you are a member of the Monta Vista Class of 2025 by clicking the link above."
         embed.url = url
         await ctx.send(embed=embed)
 
