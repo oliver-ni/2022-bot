@@ -29,7 +29,7 @@ msg_dict = {
     "rejected": (
         "close-circle",
         "Rejected",
-        "Unfortunately, your account has been rejected. Our server is only for members of the Lynbrook Class of 2025.",
+        "Unfortunately, your account has been rejected. Our server is only for members of the Monta Vista Class of 2025.",
     ),
     "blacklisted": (
         "close-circle",
