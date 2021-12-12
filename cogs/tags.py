@@ -1,11 +1,17 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Copyright (c) 2021 Oliver Ni
+
 from dataclasses import dataclass
-from helpers.utils import FakeUser
 
 import discord
 import pymongo
 from bson.objectid import ObjectId
 from discord.ext import commands, menus
 from helpers.pagination import AsyncListPageSource
+from helpers.utils import FakeUser
 
 
 @dataclass
@@ -166,9 +172,7 @@ class Tags(commands.Cog):
         tag = Tag(name=name, owner_id=ctx.author.id, alias=True, original=original.name)
         try:
             await self.bot.mongo.db.tag.insert_one(tag.to_dict())
-            await ctx.send(
-                f'Tag alias "{tag.name}" pointing to "{original.name}" successfully created.'
-            )
+            await ctx.send(f'Tag alias "{tag.name}" pointing to "{original.name}" successfully created.')
         except pymongo.errors.DuplicateKeyError:
             await ctx.send(f'A tag with the name "{tag.name}" already exists.')
 

@@ -1,3 +1,9 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Copyright (c) 2021 Oliver Ni
+
 import logging
 from datetime import datetime, timezone
 
@@ -176,9 +182,7 @@ class Logging(commands.Cog):
         """
 
         channel = channel or ctx.channel
-        await self.bot.mongo.db.channel.update_one(
-            {"_id": channel.id}, {"$set": {"restricted": True}}
-        )
+        await self.bot.mongo.db.channel.update_one({"_id": channel.id}, {"$set": {"restricted": True}})
         await ctx.send(f"Restricted logs for **#{channel}** to Admins.")
 
 

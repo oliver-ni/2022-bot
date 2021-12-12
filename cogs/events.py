@@ -1,12 +1,17 @@
-from datetime import datetime
-from datetime import timedelta
-from dateutil.parser import parse
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Copyright (c) 2021 Oliver Ni
+
+import json
+from datetime import datetime, timedelta
 
 import discord
-import json
-from discord.ext import commands, tasks
 from aiogoogle import Aiogoogle
 from aiogoogle.auth.creds import ServiceAccountCreds
+from dateutil.parser import parse
+from discord.ext import commands, tasks
 
 CLASS_EVENTS_CALENDAR = "465gi7ilseitglkbohd2dgrd6o@group.calendar.google.com"
 ASB_EVENTS_CALENDAR = "qd1epm3o57ns1e5umjq6hfnric@group.calendar.google.com"

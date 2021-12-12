@@ -1,3 +1,9 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Copyright (c) 2021 Oliver Ni
+
 import asyncio
 import json
 import random
@@ -106,18 +112,14 @@ class FoodTriviaEvent(commands.Cog):
                 users[user.id] += 1
 
         if len(users) == 0:
-            return await channel.send(
-                "No one participated. Come at the next half hour for more questions!"
-            )
+            return await channel.send("No one participated. Come at the next half hour for more questions!")
 
         winner_id, score = users.most_common(1)[0]
         bonus = len(users) * 2
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = "The Food Trivia round has ended."
-        embed.description = (
-            f"<@!{winner_id}> won the round with a score of {score}! (+{bonus} bonus points)"
-        )
+        embed.description = f"<@!{winner_id}> won the round with a score of {score}! (+{bonus} bonus points)"
         embed.set_footer(text="Come back at the next half hour for more questions!")
         await channel.send(embed=embed)
         await self.bot.mongo.db.member.update_one(

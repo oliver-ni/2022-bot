@@ -1,3 +1,9 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Copyright (c) 2021 Oliver Ni
+
 import json
 from typing import Union
 
@@ -40,9 +46,7 @@ class Verification(commands.Cog):
         if user is None:
             return {"status": "error", "error": "user-not-found"}
 
-        return await self.verify_user(
-            user, info["token"]["oauth_token"], info["token"]["oauth_token_secret"]
-        )
+        return await self.verify_user(user, info["token"]["oauth_token"], info["token"]["oauth_token_secret"])
 
     async def verify_user(self, user, token, secret):
         async with self.client(verifier=str(user.id), token=token, token_secret=secret) as client:
@@ -52,10 +56,7 @@ class Verification(commands.Cog):
                 r = await client.get(r.headers["Location"])
             data = r.json()
 
-        if (
-            await self.bot.mongo.db.member.find_one({"_id": user.id, "blacklisted": True})
-            is not None
-        ):
+        if await self.bot.mongo.db.member.find_one({"_id": user.id, "blacklisted": True}) is not None:
             return {"status": "success", "result": "blacklisted"}
 
         if (
@@ -114,7 +115,9 @@ class Verification(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = "Sign in with Schoology"
-        embed.description = "Please verify that you are a member of the Lynbrook Class of 2025 by clicking the link above."
+        embed.description = (
+            "Please verify that you are a member of the Lynbrook Class of 2025 by clicking the link above."
+        )
         embed.url = url
         await ctx.send(embed=embed)
 
@@ -141,9 +144,7 @@ class Verification(commands.Cog):
         You must have the Ban Members permission to use this.
         """
 
-        result = await self.bot.mongo.db.member.update_one(
-            {"_id": user.id}, {"$unset": {"blacklisted": 1}}
-        )
+        result = await self.bot.mongo.db.member.update_one({"_id": user.id}, {"$unset": {"blacklisted": 1}})
         if result.modified_count == 0:
             return await ctx.send("This user is not blacklisted.")
         await ctx.send(f"Unblacklisted **{user}**.")
