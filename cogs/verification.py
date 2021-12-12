@@ -1,6 +1,12 @@
-import discord
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Copyright (c) 2021 Oliver Ni
+
 import json
 
+import discord
 from discord.ext import commands, ipc
 from helpers.oauth import AsyncSchoologyOAuth1Client
 
@@ -38,9 +44,7 @@ class Verification(commands.Cog):
         if user is None:
             return {"status": "error", "error": "user-not-found"}
 
-        return await self.verify_user(
-            user, info["token"]["oauth_token"], info["token"]["oauth_token_secret"]
-        )
+        return await self.verify_user(user, info["token"]["oauth_token"], info["token"]["oauth_token_secret"])
 
     async def verify_user(self, user, token, secret):
         async with self.client(verifier=str(user.id), token=token, token_secret=secret) as client:
@@ -105,7 +109,9 @@ class Verification(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = "Sign in with Schoology"
-        embed.description = "Please verify that you are a member of the Lynbrook Class of 2022 by clicking the link above."
+        embed.description = (
+            "Please verify that you are a member of the Lynbrook Class of 2022 by clicking the link above."
+        )
         embed.url = url
         await ctx.send(embed=embed)
 

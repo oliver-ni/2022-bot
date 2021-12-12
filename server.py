@@ -1,9 +1,14 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Copyright (c) 2021 Oliver Ni
+
+import config
 from discord.ext import ipc
 from starlette.applications import Starlette
 from starlette.responses import PlainTextResponse, Response
 from starlette.templating import Jinja2Templates
-
-import config
 
 ipc_client = ipc.Client(secret_key=config.SECRET_KEY)
 app = Starlette(debug=True)

@@ -1,8 +1,14 @@
-from helpers.pagination import AsyncFieldsPageSource
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Copyright (c) 2021 Oliver Ni
+
 import random
 
 import discord
 from discord.ext import commands, menus
+from helpers.pagination import AsyncFieldsPageSource
 
 
 class Levels(commands.Cog):
@@ -30,10 +36,10 @@ class Levels(commands.Cog):
         )
 
         if user.get("xp", 0) + xp > self.min_xp_at(user.get("level", 0) + 1):
-            await self.bot.mongo.db.member.update_one(
-                {"_id": message.author.id}, {"$inc": {"level": 1}}
+            await self.bot.mongo.db.member.update_one({"_id": message.author.id}, {"$inc": {"level": 1}})
+            msg = (
+                f"Congratulations {message.author.mention}, you are now level **{user.get('level', 0) + 1}**!"
             )
-            msg = f"Congratulations {message.author.mention}, you are now level **{user.get('level', 0) + 1}**!"
             await message.channel.send(msg)
 
     @commands.command(aliases=("rank", "level"))

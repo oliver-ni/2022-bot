@@ -1,5 +1,11 @@
-from discord.ext import commands
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Copyright (c) 2021 Oliver Ni
+
 import discord
+from discord.ext import commands
 
 
 class ReactionRoles(commands.Cog):
@@ -68,9 +74,7 @@ class ReactionRoles(commands.Cog):
         You must have the Administrator permission to use this.
         """
 
-        result = await self.bot.mongo.db.rolemenu.delete_one(
-            {"name": name, "guild_id": ctx.guild.id}
-        )
+        result = await self.bot.mongo.db.rolemenu.delete_one({"name": name, "guild_id": ctx.guild.id})
         if result.deleted_count > 0:
             await ctx.send(f"Deleted role menu **{name}**.")
         else:
@@ -131,9 +135,7 @@ class ReactionRoles(commands.Cog):
         await self.bot.mongo.db.rolemenu.update_one(
             {"_id": menu["_id"]}, {"$set": {f"options.{key}": role.id}}
         )
-        await ctx.send(
-            f"Added {emoji} linking to role **{role}** to role menu in {message.channel.mention}."
-        )
+        await ctx.send(f"Added {emoji} linking to role **{role}** to role menu in {message.channel.mention}.")
 
     @rolemenu.command(name="remove")
     @commands.has_permissions(administrator=True)
@@ -162,9 +164,7 @@ class ReactionRoles(commands.Cog):
 
         key = str(emoji.id) if isinstance(emoji, discord.Emoji) else emoji
         role = ctx.guild.get_role(menu["options"][key])
-        await self.bot.mongo.db.rolemenu.update_one(
-            {"_id": menu["_id"]}, {"$unset": {f"options.{key}": 1}}
-        )
+        await self.bot.mongo.db.rolemenu.update_one({"_id": menu["_id"]}, {"$unset": {f"options.{key}": 1}})
         await ctx.send(
             f"Removed {emoji} linking to role **{role}** to role menu in {message.channel.mention}."
         )
